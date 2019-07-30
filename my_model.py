@@ -11,13 +11,15 @@ class MyModel(nn.Module):
         self.gpu = gpu
         
         # input size: 4 * 50 * 130
-        self.frontend_feat = [32, 32, 'M', 64, 64, 'M', 128, 128, 'M', 256, 256, 'M']
+        self.frontend_feat = [32, 32, 'M', 64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 256, 256, 'M']
         self.frontend = make_layers(self.frontend_feat,in_channels=config.CHANNELS) # 256 * 5 *7
         
         # flatten here
         self.drop = nn.Dropout(0.5)
         self.nh, self.nw = config.HEIGHT, config.WIDTH
-        for i in range(4):
+        for i in range(5):
+            self.nh += 4
+            self.nw += 4
             self.nh = self.nh // 2
             self.nw = self.nw // 2
         assert self.nh > 1 and self.nw > 1, '图像尺寸过小，请放大图像后再试！'
@@ -58,7 +60,7 @@ def make_layers(cfg, in_channels = 3):
         if v == 'M':
             layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
         else:
-            conv2d = nn.Conv2d(in_channels, v, kernel_size=3, padding=1)
+            conv2d = nn.Conv2d(in_channels, v, kernel_size=3, padding=2)# 使用padding=2准确率会更高
             layers += [conv2d, nn.BatchNorm2d(v), nn.ReLU(inplace=True)]
             in_channels = v
     return nn.Sequential(*layers)
