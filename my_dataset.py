@@ -1,16 +1,13 @@
 from torch.utils.data import Dataset, DataLoader
 import os
-import matplotlib.pyplot as plt
 from PIL import Image
-import string
 import torch
 import numpy as np
 from torchvision.transforms import transforms, functional
+import config
 
-letters = string.digits + string.ascii_lowercase
-CHARS = [c for c in letters]
 
-ONE_HOT = torch.eye(len(CHARS))
+ONE_HOT = torch.eye(len(config.CHARS))
 
 class ImageDataset(Dataset):
     def __init__(self, folder='./data', phase='train', transform=None):
@@ -37,7 +34,7 @@ class Word2OneHot(object):
     def __call__(self, sample):
         labels = list()
         for c in sample['label']:
-            idx = CHARS.index(c)
+            idx = config.CHARS.index(c)
             labels.append(ONE_HOT[idx])
         sample['label'] = torch.cat(labels)
         return sample
@@ -68,9 +65,11 @@ class ToGPU(object):
 def load_data(batch_size=1, gpu=True):
 
     # initialize transform
+    mean_ = [127.5 for i in range(config.CHANNELS)]
+    std_ = [128 for i in range(config.CHANNELS)]
     chains = [Word2OneHot(),
               ImgToTensor(),
-              Normalize([127.5, 127.5, 127.5, 127.5], [128, 128, 128, 128])]
+              Normalize(mean_, std_)]
     if gpu:
         chains.append(ToGPU())
     transform = transforms.Compose(chains)
@@ -81,12 +80,3 @@ def load_data(batch_size=1, gpu=True):
     valid_ds = ImageDataset(phase='test', transform=transform)
     valid_dl = DataLoader(valid_ds, batch_size=1)
     return train_dl, valid_dl
-
-if __name__ == '__main__':
-    td, vd = load_data(batch_size=1, gpu=False)
-    for i,data in enumerate(td):
-        img = data['image']
-        label = data['label']
-        print(img.shape)
-        print(label.shape)
-        break

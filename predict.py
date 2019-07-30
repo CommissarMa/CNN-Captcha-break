@@ -36,14 +36,12 @@ class Predictor(object):
 
 
 if __name__ == '__main__':
-    man = Predictor('current.pth', gpu=False)
-    folder = './data/test'
-    import os
-    import time
-    start =time.time()
-    for s in os.listdir(folder):
-        img_path = os.path.join(folder, s)
-        print(s, man.identify(img_path))
-    end = time.time()
-    print(end - start)
+    # 设置模型的路径
+    model_path = 'current.pth'
+    # 设置要测试的图像路径
+    img_path = './data/test/3chgc.png'
+
+    man = Predictor(model_path, gpu=False)
+    
+    print(man.identify(img_path))
         

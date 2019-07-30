@@ -9,8 +9,8 @@ from my_model import MyModel
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
 import numpy as np
+import config
 
 
 def loss_batch(model, loss_func, data, opt=None):
@@ -26,8 +26,8 @@ def loss_batch(model, loss_func, data, opt=None):
         loss.backward()
         opt.step()
     else:  # 测试阶段计算准确率
-        yb = yb.view(-1, 5, 36) # 真实标签
-        out_matrix = out.view(-1, 5, 36) # 预测标签
+        yb = yb.view(-1, config.LEN, len(config.CHARS)) # 真实标签
+        out_matrix = out.view(-1, config.LEN, len(config.CHARS)) # 预测标签
         _, ans = torch.max(yb, 2) # 真实标签的下标 torch.Size([1,5])
         _, predicted = torch.max(out_matrix, 2) # 真实标签的下标 torch.Size([1,5])
         compare = (predicted == ans) # torch.Size([1,5])，正确为1，错误为0
@@ -43,8 +43,7 @@ def loss_batch(model, loss_func, data, opt=None):
 
 
 if __name__ == '__main__':
-    # 是否使用GPU来训练
-    use_gpu = torch.cuda.is_available()
+    use_gpu = torch.cuda.is_available() # 是否使用GPU来训练
     batch_size = 32
     epochs = 500
     
@@ -53,7 +52,6 @@ if __name__ == '__main__':
     opt = optim.Adadelta(model.parameters())
     criterion = nn.BCELoss()  # loss function
     
-    max_acc = 0
     for epoch in range(epochs):
         '''training phase'''
         model.train()
@@ -86,8 +84,8 @@ if __name__ == '__main__':
             
             print('After epoch {}: \n'
               '\tLoss: {:.6f}\n'
-              '\tSingle Acc: {:.2f}%\n'
-              '\tWhole Acc: {:.2f}%'
+              '\t单字符准确率: {:.2f}%\n'
+              '\t整体准确率: {:.2f}%'
               .format(epoch + 1, val_loss, single_rate, whole_rate))
         
         
