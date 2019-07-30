@@ -4,6 +4,11 @@
 ### 环境要求
 Pytorch1.0.0以上版本 [[教程]](https://pytorch.org/get-started/locally/)
 
+### 原理
++ 卷积神经网络进行多标签分类  
++ 交叉熵损失
++ Adadelta优化器
+
 ### 数据集
 + 本项目解决的验证码类型如下：  
 ![3chgc](show_imgs/3chgc.png)
@@ -20,4 +25,11 @@ Pytorch1.0.0以上版本 [[教程]](https://pytorch.org/get-started/locally/)
 + run predict.py，得到该测试图像的识别结果
 
 ### 训练与本文不同的验证码
-如果你想要训练与本文不同的验证码，
+如果你想要训练与本文不同的验证码，请根据你的数据集设置config.py中的参数，然后重复上述训练/预测步骤即可。
+
+### 参考资料
++ [skyduy/CNN_keras](https://github.com/skyduy/CNN_keras)
++ [ypwhs/captcha_break](https://github.com/ypwhs/captcha_break)
+
+### 发布
+如果你想将代码发布压缩包供他人使用，可以参照[[V1.0]](https://github.com/CommissarMa/CNN-Captcha-break/releases/tag/v1.0)中的代码格式。
