@@ -45,10 +45,10 @@ def loss_batch(model, loss_func, data, opt=None):
 if __name__ == '__main__':
     # 是否使用GPU来训练
     use_gpu = torch.cuda.is_available()
-    batch_size = 4
-    epochs = 50
+    batch_size = 32
+    epochs = 500
     
-    train_dl, valid_dl = load_data(batch_size=4, gpu=use_gpu)
+    train_dl, valid_dl = load_data(batch_size=batch_size, gpu=use_gpu)
     model = MyModel(gpu=use_gpu)
     opt = optim.Adadelta(model.parameters())
     criterion = nn.BCELoss()  # loss function
@@ -56,9 +56,9 @@ if __name__ == '__main__':
     max_acc = 0
     for epoch in range(epochs):
         '''training phase'''
+        model.train()
         running_loss = 0.0
         total_nums = 0
-        model.train()
         for i, data in enumerate(train_dl):
             loss, _, _, s = loss_batch(model, criterion, data, opt)
             running_loss += loss * s
@@ -69,6 +69,7 @@ if __name__ == '__main__':
         
         '''valudating phase'''
         model.eval()
+        best_whole_rate = 0
         with torch.no_grad():
             losses, single, whole, batch_size = zip(
                 *[loss_batch(model, criterion, data) for data in valid_dl]
@@ -77,10 +78,11 @@ if __name__ == '__main__':
             val_loss = np.sum(np.multiply(losses, batch_size)) / total_size
             single_rate = 100 * np.sum(single) / (total_size * 5)
             whole_rate = 100 * np.sum(whole) / total_size
-#            if single_rate > max_acc:
-#                patience = 0
-#                max_acc = single_rate
-#                model.save('pretrained')
+            if whole_rate > best_whole_rate:
+                best_whole_rate = whole_rate
+                name = 'mazhenwei_net_' + str(epoch) + '_' + str(int(whole_rate)) + '.pth'
+                model.save(name)
+            model.save('current.pth')
             
             print('After epoch {}: \n'
               '\tLoss: {:.6f}\n'

@@ -1,6 +1,5 @@
 import torch.nn as nn
 import torch.nn.functional as F
-import torch
 import os
 
 
@@ -8,14 +7,14 @@ class MyModel(nn.Module):
     def __init__(self, gpu=False):
         super(MyModel, self).__init__()
         self.gpu = gpu
-        
-        # input size: 4 * 50 * 130
-        self.frontend_feat = [32, 32, 'M', 64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 256, 256, 'M']
-        self.frontend = make_layers(self.frontend_feat,in_channels=4) # 256 * 5 *7
-        
+        # size: 4 * 50 * 130
+        self.conv1 = nn.Conv2d(4, 32, kernel_size=3, padding=1)  # 32 * 50 * 130
+        self.pool1 = nn.MaxPool2d(2)  # 32 * 25 * 65
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)  # 64 * 25 * 65
+        self.pool2 = nn.MaxPool2d(2)  # 64 * 12 * 32
         # flatten here
         self.drop = nn.Dropout(0.5)
-        self.fc1 = nn.Linear(256 * 5 * 7, 360)
+        self.fc1 = nn.Linear(64 * 12 * 32, 360)
         self.fc2 = nn.Linear(360, 36 * 5)
 
         if self.gpu:
@@ -23,8 +22,11 @@ class MyModel(nn.Module):
 
     def forward(self, x):
         '''x: N*4*50*130'''
-        x = self.frontend(x)
-        x = x.view(-1, 256 * 5 * 7)  # flatten here
+        x = F.relu(self.conv1(x))
+        x = self.pool1(x)
+        x = F.relu(self.conv2(x))
+        x = self.pool2(x)
+        x = x.view(-1, 64 * 12 * 32)  # flatten here
         x = self.drop(x)
         x = F.relu(self.fc1(x))
         x = self.fc2(x).view(-1, 5, 36)
@@ -44,18 +46,6 @@ class MyModel(nn.Module):
         static_dict = torch.load(path, map_location)
         self.load_state_dict(static_dict)
         self.eval()
-
-
-def make_layers(cfg, in_channels = 3):
-    layers = []
-    for v in cfg:
-        if v == 'M':
-            layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
-        else:
-            conv2d = nn.Conv2d(in_channels, v, kernel_size=3, padding=2)
-            layers += [conv2d, nn.BatchNorm2d(v), nn.ReLU(inplace=True)]
-            in_channels = v
-    return nn.Sequential(*layers)
 
 
 if __name__ == "__main__":
