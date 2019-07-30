@@ -79,19 +79,14 @@ def load_data(batch_size=1, gpu=True):
     train_ds = ImageDataset(phase='train', transform=transform)
     train_dl = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
     valid_ds = ImageDataset(phase='test', transform=transform)
-    valid_dl = DataLoader(valid_ds, batch_size=batch_size)
+    valid_dl = DataLoader(valid_ds, batch_size=1)
     return train_dl, valid_dl
 
 if __name__ == '__main__':
-    td, vd = load_data(batch_size=1, gpu=True)
+    td, vd = load_data(batch_size=1, gpu=False)
     for i,data in enumerate(td):
         img = data['image']
         label = data['label']
-        if label.shape != torch.Size([1, 180]):
-            print(img.shape)
-            print(label.shape)
-#        print(img.shape)
-#        print(label)
-#        if img.shape[]
-#        print(i)
-#        break
+        print(img.shape)
+        print(label.shape)
+        break
